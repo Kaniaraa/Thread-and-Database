@@ -1,40 +1,60 @@
+/**
+ * Class Produk merepresentasikan barang di toko online.
+ * 
+ * Fitur penting:
+ * - Synchronized di method `beli()` supaya dua pelanggan ga bisa beli bersamaan.
+ * - Integrasi dengan DatabaseManager biar stok selalu update di database.
+ */
 public class Produk {
-    private String nama;
+    private final int id;
+    private final String nama;
     private int stok;
+    private final double harga;
+    private final DatabaseManager dbManager;
 
-    public Produk(String nama, int stok) {
+    public Produk(int id, String nama, int stok, double harga, DatabaseManager dbManager) {
+        this.id = id;
         this.nama = nama;
         this.stok = stok;
+        this.harga = harga;
+        this.dbManager = dbManager;
     }
 
-    // synchronized supaya thread lain gak bisa ubah stok di waktu bersamaan
-    public synchronized void beli(int jumlah) {
-        String threadName = Thread.currentThread().getName();
-        System.out.println("[" + threadName + "] mencoba beli " + jumlah + " " + nama);
+    public synchronized boolean beli(int jumlah, String namaPembeli) {
+        System.out.println("[" + namaPembeli + "] mencoba beli " + jumlah + " unit " + nama);
 
         if (jumlah <= 0) {
-            System.out.println("❌ [" + threadName + "] jumlah tidak valid!");
-            return;
+            System.out.println("❌ Jumlah pembelian tidak valid!");
+            return false;
         }
 
         if (stok >= jumlah) {
             try {
-                Thread.sleep(100); // simulasi delay transaksi
+                Thread.sleep(500); // simulasi waktu proses pembayaran
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                return false;
             }
+
+            int stokSebelum = stok;
             stok -= jumlah;
-            System.out.println("✅ [" + threadName + "] berhasil beli! Stok sisa: " + stok);
+            boolean sukses = dbManager.updateStok(id, stok);
+
+            if (sukses) {
+                System.out.println("✅ [" + namaPembeli + "] berhasil beli " + jumlah + " unit. Stok: " + stokSebelum + " -> " + stok);
+                return true;
+            } else {
+                stok = stokSebelum; // rollback
+                System.out.println("⚠️ [" + namaPembeli + "] gagal update database, stok dikembalikan.");
+            }
+
         } else {
-            System.out.println("❌ [" + threadName + "] stok tidak cukup!");
+            System.out.println("🚫 [" + namaPembeli + "] gagal beli. Stok tidak cukup!");
         }
+
+        return false;
     }
 
-    public int getStok() {
-        return stok;
-    }
-
-    public String getNama() {
-        return nama;
-    }
+    public String getNama() { return nama; }
+    public int getStok() { return stok; }
 }
