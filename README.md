@@ -3,7 +3,6 @@
 **Nama:** `Kania Putri Rohimatuz Azzahra Hamdani`
 **NIM:** `F1D02310065`
 Program ini mensimulasikan toko online sederhana di mana dua pelanggan (Rara dan Diva) melakukan pembelian secara bersamaan (multithreaded) terhadap produk yang sama dari database MySQL.
-
 Simulasi ini menunjukkan pentingnya sinkronisasi (synchronized) untuk mencegah terjadinya race condition saat dua proses mengakses dan memodifikasi data yang sama.
 
 **Thread (`implements Runnable`)** : Setiap pembeli dijalankan pada thread terpisah agar bisa melakukan transaksi bersamaan (concurrent).
